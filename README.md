@@ -114,6 +114,7 @@ You can run ExRay using any trace collection that honors
       span |> ExRay.close("123")
     end
   end
+  ```
 
   ---
 <img src="assets/imhoteplogo.png" width="32" height="auto"/> © 2017 Imhotep Software LLC.
