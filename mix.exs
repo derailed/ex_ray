@@ -8,6 +8,7 @@ defmodule ExRay.Mixfile do
       description:       description(),
       source_url:        "https://github.om/derailed/aspex",
       package:           package(),
+      docs:              docs(),
       elixir:            "~> 1.5",
       start_permanent:   Mix.env == :prod,
       deps:              deps(),
@@ -40,8 +41,8 @@ defmodule ExRay.Mixfile do
 
   defp description do
     """
-    ExRay is a library to enable tracing for your Elixir/Phoenix applications using
-    OpenTracing.
+    ExRay enables tracing for your Elixir/Phoenix applications using
+    OpenTracing powered by Otter.
     """
   end
 
@@ -50,8 +51,16 @@ defmodule ExRay.Mixfile do
       licenses:    ["Apache 2.0"],
       organization: "Imhotep Software",
       maintainers: ["Fernand Galiana"],
-      files:       ["lib", "mix.exs", "LICENSE", "README.md"],
+      files:       ["lib", "mix.exs", "README.md"],
       links:       %{"GitHub" => "https://github.com/derailed/ex_ray"}
+    ]
+  end
+
+  defp docs do
+    [
+      main:   "ExRay",
+      logo:   "assets/xray.png",
+      extras: ["README.md"]
     ]
   end
 end

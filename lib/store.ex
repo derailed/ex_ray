@@ -1,6 +1,6 @@
 defmodule ExRay.Store do
   @moduledoc """
-  Store the span chains in an ets table. The table must be created during
+  Store the span chains in an ETS table. The table must be created during
   the application initialization using the create call. The span chain acts
   like a call stack by pushing and popping spans as they come in and out of
   scope.
@@ -11,7 +11,7 @@ defmodule ExRay.Store do
   require Logger
 
   @doc """
-  Initializes the spans ets table. The span table can be shared across
+  Initializes the spans ETS table. The span table can be shared across
   process boundary.
   """
   @spec create :: any

@@ -85,7 +85,7 @@ ExRay using any trace collector that Otter supports. In the following example we
     navigating the call stack.
 
     > NOTE: One cool aspect of OpenTracing is the tracing does not stop at the process boundaries
-    as you can continue the chain to other processes and REST/GRPC services. Please see
+    as you can continue the chain to other processes and external services. Please see
     the examples directory for further info.
 
     In your application initialization, you need to make sure the ExRay ETS table is created by calling

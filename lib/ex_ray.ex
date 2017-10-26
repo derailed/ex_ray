@@ -1,53 +1,61 @@
 defmodule ExRay do
   @moduledoc """
-  ExRay defines a custom annotation that wraps regular functions and enable
-  them to be traced using a simple affordance aka @trace. At the base,
-  OpenTracing defines the concept of a span that track the callstack and
-  record timing information, tags and logs,... . So instead of littering
-  your code with span management, ExRay provides an easy way to inject
-  your tracing needs by simply using an annotation and wrapping your
-  function calls.
+  ExRay defines an annotation construct that wraps regular functions and enable
+  them to be traced using a simple affordance **@trace** to interact with an
+  OpenTracing compliant collector.
 
-  Under the scene, ExRay leverages
-  [Otter](https://github.com/Bluehouse-Technology/otter) an Erlang library
-  written by the fine folks at Bluehouse Technology.
+  [OpenTracing](http://opentracing.io/) defines the concept of spans that
+  track the call stack and record timing information and various call artifacts
+  that can be used for application runtime inspection.
+  This is a really cool piece of technology that compliments your monitoring
+  solution as you now have x-ray vision of your application at runtime once
+  a monitoring metric gets off the chart.
+
+  However, in practice, your code gets quickly cluttered by your tracing efforts.
+  ExRay alleviates the clutter by injecting cross-cutting tracing concern into
+  your application code. By using @trace annotation, you can trap the essence of
+  the calls without introducing tracing code mixed-in with your business logic.
+
+  ExRay leverages [Otter](https://github.com/Bluehouse-Technology/otter) Erlang
+  OpenTracing lib from the fine folks of BlueHouse Technology.
 
   To enable OpenTracing with ExRay
 
   ```elixir
   defmodule Traceme do
-    use ExRay, pre: :pre_fn, post: :post_fn
+    use ExRay, pre: :pre_fun, post: :post_fun
+
+    alias ExRay.Span
 
     @trace kind: :cool_kid
     def elvis(a, b), do: a + b
 
-    defp pre_fn(ctx) do
+    defp pre_fun(ctx) do
       ctx.target
-      |> ExRay.open("123") # where 123 represent a unique callstack ID
+      |> Span.open("123") # where 123 represent a unique callstack ID
       |> :otter.tag(:kind, ctx.meta[:kind])
       |> :otter.log("Calling Elvis!")
     end
 
-    defp post_fn(ctx, span, _res) do
+    defp post_fun(_ctx, span, _res) do
       span
       |> :otter.log("Elvis has left the building!")
-      |> ExRay.close("123")
+      |> Span.close("123")
     end
   end
   ```
 
   ExRay provisions an `ExRay.Context` with function details and metadata
-  that comes from the annotation that you can leverage within with pre and
-  post hook span functions.
+  that comes from the annotation. You can leverage this information for
+  tracing in your pre and post span-hook functions.
   """
 
   @doc """
-  Defines a @trace annotation to enable plain function to be traced. Calling an
+  Defines a @trace annotation to enable regular function to be traced. Calling an
   annotated function f1 will ensure that a new span is created upon invocation
   and closed when the function exits. This macro will define a new function
-  that overrides the original function and generates a new function with pre
-  and post function calls. There is no impact on the runtime as the new
-  function is generated at compile time.
+  that will call the original function but decorated with pre
+  and post tracing hooks. Tracing functions are generated at compile time.
   """
   defmacro __using__(opts) do
     quote do
@@ -63,6 +71,10 @@ defmodule ExRay do
     end
   end
 
+  @doc """
+  Flags functions that have been annotated for further processing during
+  the compilation phase
+  """
   def on_definition(env, k, f, a, g, b) do
     tag = env.module |> Module.get_attribute(:trace)
     unless tag |> Enum.empty? do
@@ -71,6 +83,11 @@ defmodule ExRay do
     env.module |> Module.delete_attribute(:trace)
   end
 
+  @doc """
+  Generates a new tracing function with before and after hooks that will
+  call the original function. Pre and Post hooks can be defined at the
+  module level or overriden on a per function basis.
+  """
   defmacro before_compile(env) do
     funs = env.module |> Module.get_attribute(:ex_ray_funs)
     env.module |> Module.delete_attribute(:ex_ray_funs)
