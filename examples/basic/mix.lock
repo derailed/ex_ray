@@ -1,0 +1,3 @@
+%{"ibrowse": {:hex, :ibrowse, "4.4.0", "2d923325efe0d2cb09b9c6a047b2835a5eda69d8a47ed6ff8bc03628b764e991", [:rebar3], []},
+  "otter": {:hex, :otter, "0.4.0", "f12d1d5493104507a649d30962d76de5db0858cdb3f0de26e9712c8ef247719f", [:rebar3], [{:otter_lib, "~>0.1.1", [hex: :otter_lib, optional: false]}]},
+  "otter_lib": {:hex, :otter_lib, "0.1.1", "9ef4401013c52f581278d7beb15ae536dc629cdac72dfeebac2384069f9461fd", [:rebar3], []}}

@@ -40,8 +40,8 @@ defmodule ExRay.Mixfile do
 
   defp description do
     """
-    ExRay provides OpenTracing hooks for your Elixir application as
-    function annotations.
+    ExRay is a library to enable tracing for your Elixir/Phoenix applications using
+    OpenTracing.
     """
   end
 
