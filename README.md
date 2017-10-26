@@ -14,8 +14,8 @@ OpenTracing compliant collector.
 track the call stack and record timing information and various call artifacts
 that can be used for application runtime inspection.
 This is a really cool piece of technology that compliments your monitoring
-solution as you now have x-ray vision into your application once a monitoring
-metric gets off the chart.
+solution as you now have x-ray vision of your application at runtime once
+a monitoring metric gets off the chart.
 
 However, in practice, your code gets quickly cluttered by your tracing efforts.
 ExRay alleviates the clutter by injecting cross-cutting tracing concern into
