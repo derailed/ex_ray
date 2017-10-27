@@ -20,7 +20,7 @@ defmodule Nested.Mixfile do
 
   defp deps do
     [
-      {:ex_ray , "~> 0.1.2"},
+      {:ex_ray , "~> 0.1.3"},
       {:ibrowse, "~> 4.4.0"}
     ]
   end
