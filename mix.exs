@@ -4,7 +4,7 @@ defmodule ExRay.Mixfile do
   def project do
     [
       app:               :ex_ray,
-      version:           "0.1.2",
+      version:           "0.1.3",
       description:       description(),
       source_url:        "https://github.com/derailed/ex_ray",
       package:           package(),

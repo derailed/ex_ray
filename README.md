@@ -30,6 +30,10 @@ the calls without introducing tracing code mixed-in with your business logic.
 ExRay leverages [Otter](https://github.com/Bluehouse-Technology/otter) Erlang
 OpenTracing lib from the fine folks of BlueHouse Technology.
 
+## Documentation
+
+[ExRay](https://hexdocs.pm/ex_ray)
+
 ## Installation
 
 Tracing information, needs to be collected by a tracing backend of your choice. You can run

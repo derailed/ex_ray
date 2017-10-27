@@ -62,7 +62,6 @@ defmodule ExRay do
       import ExRay
 
       __MODULE__ |> Module.put_attribute(:exray_opts, unquote(opts))
-
       __MODULE__ |> Module.register_attribute(:trace, accumulate: true)
       __MODULE__ |> Module.register_attribute(:ex_ray_funs, accumulate: true)
 
@@ -91,9 +90,16 @@ defmodule ExRay do
   defmacro before_compile(env) do
     funs = env.module |> Module.get_attribute(:ex_ray_funs)
     env.module |> Module.delete_attribute(:ex_ray_funs)
-    funs
-    |> Enum.reduce({nil, 0, []}, fn(f, acc) -> generate(env, f, acc) end)
-    |> elem(2)
+
+    Application.get_all_env(:ex_ray)
+    |> Keyword.get(:active, true)
+    |> case do
+      true ->
+        funs
+        |> Enum.reduce({nil, 0, []}, fn(f, acc) -> generate(env, f, acc) end)
+        |> elem(2)
+      false -> ;
+    end
   end
 
   defp generate(env, {_, f, a, g, _, meta}, {prev, arity, acc}) do

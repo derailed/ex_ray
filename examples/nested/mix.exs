@@ -1,9 +1,9 @@
-defmodule Basic.Mixfile do
+defmodule Nested.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app:             :basic,
+      app:             :nested,
       version:         "0.1.0",
       elixir:          "~> 1.5",
       start_permanent: Mix.env == :prod,
@@ -14,13 +14,13 @@ defmodule Basic.Mixfile do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Basic.Application, []}
+      mod: {Nested.Application, []}
     ]
   end
 
   defp deps do
     [
-      {:ex_ray , "~> 0.1.3"},
+      {:ex_ray , "~> 0.1.2"},
       {:ibrowse, "~> 4.4.0"}
     ]
   end

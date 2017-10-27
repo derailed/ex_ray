@@ -1,6 +1,6 @@
-# ExRay Basic
+# ExRay Nested
 
-Demonstrates a simple OpenTracing use case by decorating a single function.
+Demonstrates a simple OpenTracing use case by decorating nested functions.
 
 
 ## Up And Running
@@ -16,7 +16,7 @@ Demonstrates a simple OpenTracing use case by decorating a single function.
 
     ```shell
     iex -S mix
-    > Basic.fred(10,20)
+    > Nested.fred(10,20)
     ```
 
 1. See the trace

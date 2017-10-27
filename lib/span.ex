@@ -8,7 +8,7 @@ defmodule ExRay.Span do
   The request ID uniquely identifies the call chain and will be used as
   the primary key in the ETS table tracking the span chain.
   """
-  @spec open(String.t, integer) :: any
+  @spec open(String.t, String.t) :: any
   def open(name, req_id) do
     span = req_id
     |> ExRay.Store.current
@@ -23,7 +23,7 @@ defmodule ExRay.Span do
   @doc """
   Creates a new span with a given parent span
   """
-  @spec open(String.t, integer, any) :: any
+  @spec open(String.t, String.t, any) :: any
   def open(name, req_id, p_span) do
     span = name |> :otter.start(p_span)
 
@@ -34,7 +34,7 @@ defmodule ExRay.Span do
   Closes the given span and pops the span state in the associated ETS
   span chain.
   """
-  @spec close(any, integer) :: any
+  @spec close(any, String.t) :: any
   def close(span, req_id) do
     span |> :otter.finish()
     ExRay.Store.pop(req_id)

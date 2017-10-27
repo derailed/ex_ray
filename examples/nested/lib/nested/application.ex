@@ -1,4 +1,4 @@
-defmodule Basic.Application do
+defmodule Nested.Application do
   @moduledoc false
 
   use Application
@@ -8,7 +8,7 @@ defmodule Basic.Application do
 
     children = [ ]
 
-    opts = [strategy: :one_for_one, name: Basic.Supervisor]
+    opts = [strategy: :one_for_one, name: Nested.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end
