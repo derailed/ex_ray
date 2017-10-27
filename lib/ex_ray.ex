@@ -98,7 +98,7 @@ defmodule ExRay do
         funs
         |> Enum.reduce({nil, 0, []}, fn(f, acc) -> generate(env, f, acc) end)
         |> elem(2)
-      false -> ;
+      false -> :ok
     end
   end
 
