@@ -4,9 +4,9 @@ defmodule ExRay.Mixfile do
   def project do
     [
       app:               :ex_ray,
-      version:           "0.1.1",
+      version:           "0.1.2",
       description:       description(),
-      source_url:        "https://github.om/derailed/ex_ray",
+      source_url:        "https://github.com/derailed/ex_ray",
       package:           package(),
       docs:              docs(),
       elixir:            "~> 1.5",
