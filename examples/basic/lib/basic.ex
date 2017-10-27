@@ -10,10 +10,8 @@ defmodule Basic do
   @spec fred(integer, integer) :: integer
   def fred(a, b), do: a+b
 
-  @doc """
-  Called before the annotated function fred is called. Allows to start
-  a span and decorate it with tags and log information
-  """
+  # Called before the annotated function fred is called. Allows to start
+  # a span and decorate it with tags and log information
   defp before_fun(ctx) do
     ctx.target
     |> Span.open(@req_id)
@@ -21,10 +19,8 @@ defmodule Basic do
     |> :otter.log(">>> #{ctx.target} with #{ctx.args |> inspect}")
   end
 
-  @doc """
-  Called once the annotated function is called. In this hook you can
-  add addtional span info and close the span as we are all done here.
-  """
+  # Called once the annotated function is called. In this hook you can
+  # add addtional span info and close the span as we are all done here.
   defp after_fun(ctx, span, res) do
     span
     |> :otter.log("<<< #{ctx.target} returned #{res}")

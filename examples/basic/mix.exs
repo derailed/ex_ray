@@ -20,7 +20,7 @@ defmodule Basic.Mixfile do
 
   defp deps do
     [
-      {:ex_ray , path: "../.."},
+      {:ex_ray , "~> 0.1.0"},
       {:ibrowse, "~> 4.4.0"}
     ]
   end
