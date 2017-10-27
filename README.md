@@ -104,8 +104,8 @@ ExRay using any trace collector that Otter supports. In the following example we
 
 1. Let's Trace!
 
-    Here is a simples tracing example. Please take a look at the examples in the Repo for
-    different use cases.
+    Here is a simples tracing example. Please take a look at the examples in the Repo and
+    [ExRay Tracers](https://github.com/derailed/ex_ray_tracers) for Phoenix sample use cases.
 
     ```elixir
       defmodule TraceMe do
