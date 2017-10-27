@@ -36,7 +36,7 @@ OpenTracing lib from the fine folks of BlueHouse Technology.
 
 ## Installation
 
-Tracing information, needs to be collected by a tracing backend of your choice. You can run
+Tracing information needs to be collected by a tracing backend of your choice. You can run
 ExRay using any trace collector that Otter supports. In the following example we will use
 [Jaeger](https://uber.github.io/jaeger) from the self-driven folks at Uber!
 
@@ -76,7 +76,7 @@ ExRay using any trace collector that Otter supports. In the following example we
     In your config file, you need to tell Otter where to find your Zipkin collector.
 
     ```elixir
-      config :ottcd er,
+      config :otter,
         zipkin_collector_uri:    'http://127.0.0.1:9411/api/v1/spans',
         zipkin_tag_host_service: "TraceMe",
         http_client:             :ibrowse
