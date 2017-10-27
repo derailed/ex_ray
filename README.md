@@ -4,6 +4,11 @@
   <img src="assets/xray.png"/>
 </div>
 
+[![Hex version](https://img.shields.io/hexpm/v/ex_ray.svg "Hex version")](https://hex.pm/packages/ex_ray)
+[![Hex downloads](https://img.shields.io/hexpm/dt/ex_ray.svg "Hex downloads")](https://hex.pm/packages/ex_ray)
+[![Build Status](https://semaphoreci.com/api/v1/derailed/ex_ray/branches/master/shields_badge.svg)](https://semaphoreci.com/derailed/ex_ray)
+
+
 ## Motivation
 
 ExRay defines an annotation construct that wraps regular functions and enable
@@ -56,7 +61,7 @@ ExRay using any trace collector that Otter supports. In the following example we
     def deps do
       [
         ...
-        {:ex_ray , "~> 0.1.0"},
+        {:ex_ray , "~> 0.1.2"},
         {:ibrowse, "~> 4.4.0"}
       ]
     end
