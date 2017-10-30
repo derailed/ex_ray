@@ -5,7 +5,6 @@
 </div>
 
 [![Hex version](https://img.shields.io/hexpm/v/ex_ray.svg "Hex version")](https://hex.pm/packages/ex_ray)
-[![Hex downloads](https://img.shields.io/hexpm/dt/ex_ray.svg "Hex downloads")](https://hex.pm/packages/ex_ray)
 [![Build Status](https://semaphoreci.com/api/v1/derailed/ex_ray/branches/master/shields_badge.svg)](https://semaphoreci.com/derailed/ex_ray)
 
 
