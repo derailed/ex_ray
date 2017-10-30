@@ -21,7 +21,7 @@ This is a really cool piece of technology that compliments your monitoring
 solution as you now have x-ray vision of your application at runtime once
 a monitoring metric gets off the chart.
 
-However, in practice, your code gets quickly cluttered by your tracing efforts.
+However in practice, your code gets quickly cluttered by your tracing efforts.
 ExRay alleviates the clutter by injecting cross-cutting tracing concern into
 your application code. By using @trace annotation, you can trap the essence of
 the calls without introducing tracing code mixed-in with your business logic.
