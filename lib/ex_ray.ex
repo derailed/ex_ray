@@ -179,7 +179,7 @@ defmodule ExRay do
             super(unquote_splicing(params))
           rescue
             err -> unquote(post)(ctx, pre, err)
-                   throw err
+                   raise err
           else
             res -> unquote(post)(ctx, pre, res)
                    res
