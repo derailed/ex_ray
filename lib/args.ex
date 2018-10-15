@@ -15,6 +15,7 @@ defmodule ExRay.Args do
         [{k, {a, l, m}} | t] -> [{k, {a |> unignore, l, m}} | t |> expand_ignored]
         {k, {a, l, m}}       -> {k, {a |> unignore, l, m}}
         {a, l, m}            -> {a |> unignore, l, m}
+        arg -> arg # in case of real value (not variable) as a param (function with pattern match)
       end
     end)
   end
