@@ -4,9 +4,12 @@
   <img src="assets/xray.png"/>
 </div>
 
-[![Hex version](https://img.shields.io/hexpm/v/ex_ray.svg "Hex version")](https://hex.pm/packages/ex_ray)
-[![Build Status](https://semaphoreci.com/api/v1/derailed/ex_ray/branches/master/shields_badge.svg)](https://semaphoreci.com/derailed/ex_ray)
+---
+## Differences between this fork and upstream
 
+* Enabled tracing of functions with underscore: `def fun1(_, ...) do ...`
+* Can be traced a function like this: `def fun1(%Struct1{key1: "str1" <> _) do ...`
+* Added `@trace_all` annotation to enable tracing for all function of an particular module
 
 ## Motivation
 
@@ -53,7 +56,7 @@ ExRay using any trace collector that Otter supports. In the following example we
     Alternatively, you could use the echo server [otter_srv](https://github.com/Bluehouse-Technology/otter_srv)
     for testing your installation but I find it more fun to have a cool UI to look at your tracing outcomes.
 
-1. Setup Dependencies
+2. Setup Dependencies
 
     Add the following dependencies to your project (Elixir or Phoenix)
 
@@ -70,7 +73,7 @@ ExRay using any trace collector that Otter supports. In the following example we
     end
     ```
 
-1. Configure Otter
+3. Configure Otter
 
     In your config file, you need to tell Otter where to find your Zipkin collector.
 
@@ -83,7 +86,7 @@ ExRay using any trace collector that Otter supports. In the following example we
 
       > Note: This thru me for a loop! The uri is indeed a char list and not a string!
 
-1. Configure Your Application
+4. Configure Your Application
 
     ExRay uses ETS to track the span chains. Each request will create a new chain that
     will grow and collapse with your function call stack. As such you will need to track a unique
@@ -105,7 +108,7 @@ ExRay using any trace collector that Otter supports. In the following example we
     ...
     ```
 
-1. Let's Trace!
+5. Let's Trace!
 
     Here is a simples tracing example. Please take a look at the examples in the Repo and
     [ExRay Tracers](https://github.com/derailed/ex_ray_tracers) for Phoenix sample use cases.
@@ -137,7 +140,7 @@ ExRay using any trace collector that Otter supports. In the following example we
       end
     ```
 
-1. See it!
+6. See it!
 
     That's great, but how do you see the tracing information?
 

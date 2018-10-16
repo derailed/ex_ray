@@ -63,6 +63,7 @@ defmodule ExRay do
 
       __MODULE__ |> Module.put_attribute(:exray_opts, unquote(opts))
       __MODULE__ |> Module.register_attribute(:trace, accumulate: true)
+      __MODULE__ |> Module.register_attribute(:trace_all, accumulate: true)
       __MODULE__ |> Module.register_attribute(:ex_ray_funs, accumulate: true)
 
       @on_definition  {ExRay, :on_definition}
@@ -76,8 +77,14 @@ defmodule ExRay do
   """
   def on_definition(env, k, f, a, g, b) do
     tag = env.module |> Module.get_attribute(:trace)
-    unless tag |> Enum.empty? do
-      env.module |> Module.put_attribute(:ex_ray_funs, {k, f, a, g, b, tag})
+    tag_all = env.module |> Module.get_attribute(:trace_all)
+    cond do
+      not Enum.empty?(tag) ->
+        env.module |> Module.put_attribute(:ex_ray_funs, {k, f, a, g, b, tag})
+      not Enum.empty?(tag_all) ->
+        env.module |> Module.put_attribute(:ex_ray_funs, {k, f, a, g, b, tag_all})
+      true ->
+        :ok
     end
     env.module |> Module.delete_attribute(:trace)
   end
@@ -112,20 +119,20 @@ defmodule ExRay do
     params = a |> ExRay.Args.expand_ignored
 
     def_func = g
-    |> case do
-    [] ->
-      quote do
-        def unquote(f)(unquote_splicing(params)) do
-          unquote(def_body)
-        end
+      |> case do
+        [] ->
+          quote do
+            def unquote(f)(unquote_splicing(params)) do
+              unquote(def_body)
+            end
+          end
+        _ ->
+          quote do
+            def unquote(f)(unquote_splicing(params)) when unquote_splicing(g) do
+              unquote(def_body)
+            end
+          end
       end
-    _  ->
-      quote do
-        def unquote(f)(unquote_splicing(params)) when unquote_splicing(g) do
-          unquote(def_body)
-        end
-      end
-    end
 
     if f == prev and length(a) == arity do
       {f, length(a), acc ++ [def_func]}
