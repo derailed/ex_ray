@@ -7,9 +7,29 @@
 ---
 ## Differences between this fork and upstream
 
-* Enabled tracing of functions with underscore: `def fun1(_, ...) do ...`
-* Can be traced a function like this: `def fun1(%Struct1{key1: "str1" <> _) do ...`
-* Added `@trace_all` annotation to enable tracing for all function of an particular module
+* Enabled tracing of functions with underscore:
+  ```elixir
+  def fun1(_, ...) do
+    ...
+  end
+  ```
+* Enabled `@trace_all` for module which contains a function without body:
+  ```elixir
+  defp fn1(param1, param2, param3 \\ :default_value)
+  defp fn1(param1, :default_value1, param3) do
+    ...
+  end
+  defp fn1(param1, :default_value2, param3) do
+    ...
+  end
+  ```
+* Can be traced a function with complex pattern matching like this:
+  ```elixir
+  def fun1(%Struct1{key1: "str1" <> _) do
+    ...
+  end
+  ```
+* Added `@trace_all` annotation to enable tracing for all function of an particular module.
 
 ## Motivation
 

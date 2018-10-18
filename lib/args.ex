@@ -13,6 +13,8 @@ defmodule ExRay.Args do
     {res, _acc} =
       Enum.map_reduce(args, 1, fn(arg, acc) ->
         case arg do
+          {{:., _, _} = k, l, m} ->
+            {{k, l, m}, acc + 1}
           {:%{}, l, m} ->
             {{:%{}, l, expand_ignored(m)}, acc + 1}
           [{k, {a, l, m}} | t] ->

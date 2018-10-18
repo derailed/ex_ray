@@ -79,10 +79,13 @@ defmodule ExRay do
     tag = env.module |> Module.get_attribute(:trace)
     tag_all = env.module |> Module.get_attribute(:trace_all)
     cond do
-      not Enum.empty?(tag) ->
-        env.module |> Module.put_attribute(:ex_ray_funs, {k, f, a, g, b, tag})
+      # pass all function definitions without body
+      is_nil(b) ->
+        :ok
       not Enum.empty?(tag_all) ->
         env.module |> Module.put_attribute(:ex_ray_funs, {k, f, a, g, b, tag_all})
+      not Enum.empty?(tag) ->
+        env.module |> Module.put_attribute(:ex_ray_funs, {k, f, a, g, b, tag})
       true ->
         :ok
     end
