@@ -30,11 +30,19 @@ defmodule ExRay.Args do
     res
   end
 
+  def is_utility_word(a) when is_atom(a) do
+    a_str = Atom.to_string(a)
+    is_utility_word(a_str)
+  end
+  def is_utility_word(a_str) when is_bitstring(a_str) do
+    String.starts_with?(a_str, "__") and String.ends_with?(a_str, "__")
+  end
+
   defp unignore(arg, acc) do
     a = Atom.to_string(arg)
     cond do
-      # reserved compiler words should be here
-      a in ~w(__aliases__) ->
+      # the identifier is reserved word and should be bypassed
+      is_utility_word(a) ->
         arg
       a == "_" ->
         String.to_atom("ex_ray_unique_fn_arg_var_#{acc}")

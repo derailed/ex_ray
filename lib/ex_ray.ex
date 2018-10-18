@@ -79,8 +79,11 @@ defmodule ExRay do
     tag = env.module |> Module.get_attribute(:trace)
     tag_all = env.module |> Module.get_attribute(:trace_all)
     cond do
-      # pass all function definitions without body
+      # bypass all function definitions without body
       is_nil(b) ->
+        :ok
+      # bypass all special functions decorated by `__`
+      ExRay.Args.is_utility_word(f) ->
         :ok
       not Enum.empty?(tag_all) ->
         env.module |> Module.put_attribute(:ex_ray_funs, {k, f, a, g, b, tag_all})
@@ -112,7 +115,7 @@ defmodule ExRay do
     end
   end
 
-  defp generate(env, {_, f, a, g, _, meta}, {prev, arity, acc}) do
+  defp generate(env, {_k, f, a, g, _b, meta}, {prev, arity, acc}) do
     def_body = gen_body(env, {f, a, g}, meta)
 
     def_override = quote do

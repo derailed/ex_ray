@@ -9,9 +9,7 @@
 
 * Enabled tracing of functions with underscore:
   ```elixir
-  def fun1(_, ...) do
-    ...
-  end
+  def fun1(_, ...), do: ...
   ```
 * Enabled `@trace_all` for module which contains a function without body:
   ```elixir
@@ -25,11 +23,13 @@
   ```
 * Can be traced a function with complex pattern matching like this:
   ```elixir
-  def fun1(%Struct1{key1: "str1" <> _) do
-    ...
-  end
+  def fun1(%Struct1{key1: "str1" <> _), do: ...
   ```
 * Added `@trace_all` annotation to enable tracing for all function of an particular module.
+* Bypassed all special functions decorated by `__`:
+  ```elixir
+  def __fun_a__(param), do: ...
+  ```
 
 ## Motivation
 
