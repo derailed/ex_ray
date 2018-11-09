@@ -154,6 +154,32 @@ defmodule ExRay.Store do
   """
   @spec remove_pid(pid()) :: :ok
   def remove_pid(pid) when is_pid(pid) do
+    case :ets.lookup(@pid_to_request_id_table_name, pid) do
+      [] -> :ok
+      [{pid, request_id}] ->
+        remove_pid_util(pid, request_id)
+    end
+  end
+
+  defp remove_pid_util(pid, request_id) do
     :ets.delete(@pid_to_request_id_table_name, pid)
+    case :ets.lookup(@request_id_to_pids_table_name, request_id) do
+      [] -> :ok
+      [{request_id, pids}] ->
+        new_pids = Enum.filter(pids, &(&1 != pid))
+        :ets.insert(@request_id_to_pids_table_name, {request_id, new_pids})
+    end
+  end
+
+  @doc """
+  Function-wrapper to link-unlink request_id and corresponding pid
+  """
+  def link_unlink_fn(request_id, fun) when is_function(fun) do
+    fn ->
+      pid = self()
+      link_request_id_and_pid(request_id, pid)
+      fun.()
+      remove_pid(pid)
+    end
   end
 end
