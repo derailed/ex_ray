@@ -174,9 +174,10 @@ defmodule ExRay.Store do
   @doc """
   Function-wrapper to link-unlink request_id and corresponding pid
   """
-  def link_unlink_fn(request_id, fun) when is_function(fun) do
+  def link_unlink_fn(fun) when is_function(fun) do
+    request_id = get_request_id(self()) # self() of the process who initiates creation of a new process
     fn ->
-      pid = self()
+      pid = self() # self() of the process which will be created
       link_request_id_and_pid(request_id, pid)
       fun.()
       remove_pid(pid)
