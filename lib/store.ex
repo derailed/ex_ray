@@ -9,6 +9,7 @@ defmodule ExRay.Store do
   @table_name :ex_ray_tracers_table
   @request_id_to_pids_table_name :ex_ray_request_id_to_pids_table
   @pid_to_request_id_table_name :ex_ray_pid_to_request_id_table
+  @ex_ray_ets_tables_list [@table_name, @request_id_to_pids_table_name, @pid_to_request_id_table_name]
 
   require Logger
 
@@ -18,33 +19,9 @@ defmodule ExRay.Store do
   """
   @spec create :: any
   def create do
-    :ets.new(@table_name,
-      [
-        :set,
-        :named_table,
-        :public,
-        read_concurrency:  true,
-        write_concurrency: true
-      ]
-    )
-    :ets.new(@request_id_to_pids_table_name,
-      [
-        :set,
-        :named_table,
-        :public,
-        read_concurrency:  true,
-        write_concurrency: true
-      ]
-    )
-    :ets.new(@pid_to_request_id_table_name,
-      [
-        :set,
-        :named_table,
-        :public,
-        read_concurrency:  true,
-        write_concurrency: true
-      ]
-    )
+    table_props = [:set, :named_table, :public, read_concurrency: true, write_concurrency: true]
+    Enum.each(@ex_ray_ets_tables_list,
+      fn(t) -> if :ets.info(t) == :undefined, do: :ets.new(t, table_props) end)
   end
 
   @doc """
