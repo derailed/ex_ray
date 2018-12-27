@@ -61,10 +61,10 @@ defmodule ExRay do
     quote do
       import ExRay
 
-      __MODULE__ |> Module.put_attribute(:exray_opts, unquote(opts))
-      __MODULE__ |> Module.register_attribute(:trace, accumulate: true)
-      __MODULE__ |> Module.register_attribute(:trace_all, accumulate: true)
-      __MODULE__ |> Module.register_attribute(:ex_ray_funs, accumulate: true)
+      Module.put_attribute(__MODULE__, :exray_opts, unquote(opts))
+      Module.register_attribute(__MODULE__, :trace, accumulate: true)
+      Module.register_attribute(__MODULE__, :trace_all, accumulate: true)
+      Module.register_attribute(__MODULE__, :ex_ray_funs, accumulate: true)
 
       @on_definition  {ExRay, :on_definition}
       @before_compile {ExRay, :before_compile}
@@ -76,8 +76,8 @@ defmodule ExRay do
   the compilation phase
   """
   def on_definition(env, k, f, a, g, b) do
-    tag = env.module |> Module.get_attribute(:trace)
-    tag_all = env.module |> Module.get_attribute(:trace_all)
+    tag_trace = Module.get_attribute(env.module, :trace)
+    tag_trace_all = Module.get_attribute(env.module, :trace_all)
     cond do
       # bypass all function definitions without body
       is_nil(b) ->
@@ -85,14 +85,14 @@ defmodule ExRay do
       # bypass all special functions decorated by `__`
       ExRay.Args.is_utility_word(f) ->
         :ok
-      not Enum.empty?(tag_all) ->
-        env.module |> Module.put_attribute(:ex_ray_funs, {k, f, a, g, b, tag_all})
-      not Enum.empty?(tag) ->
-        env.module |> Module.put_attribute(:ex_ray_funs, {k, f, a, g, b, tag})
+      not Enum.empty?(tag_trace_all) ->
+        Module.put_attribute(env.module, :ex_ray_funs, {k, f, a, g, b, tag_trace_all, :trace})
+      not Enum.empty?(tag_trace) ->
+        Module.put_attribute(env.module, :ex_ray_funs, {k, f, a, g, b, tag_trace, :trace})
+        Module.delete_attribute(env.module, :trace)
       true ->
         :ok
     end
-    env.module |> Module.delete_attribute(:trace)
   end
 
   @doc """
@@ -101,8 +101,9 @@ defmodule ExRay do
   module level or overriden on a per function basis.
   """
   defmacro before_compile(env) do
-    funs = env.module |> Module.get_attribute(:ex_ray_funs)
-    env.module |> Module.delete_attribute(:ex_ray_funs)
+    funs = Module.get_attribute(env.module, :ex_ray_funs)
+    Module.delete_attribute(env.module, :ex_ray_funs)
+    Module.delete_attribute(env.module, :trace_all)
 
     Application.get_all_env(:ex_ray)
     |> Keyword.get(:active, true)
@@ -115,7 +116,7 @@ defmodule ExRay do
     end
   end
 
-  defp generate(env, {_k, f, a, g, _b, meta}, {prev, arity, acc}) do
+  defp generate(env, {_k, f, a, g, _b, meta, _type}, {prev, arity, acc}) do
     def_body = gen_body(env, {f, a, g}, meta)
 
     def_override = quote do
@@ -148,10 +149,10 @@ defmodule ExRay do
   end
 
   defp gen_body(env, {fun, args, guard}, meta) do
-    opts = env.module |> Module.get_attribute(:exray_opts)
+    opts = Module.get_attribute(env.module, :exray_opts)
 
     params = args
-    |> ExRay.Args.expand_ignored
+    |> ExRay.Args.expand_ignored()
     |> Enum.map(fn(
       {:\\, _, [a, _]}) -> a
       (arg)             -> arg

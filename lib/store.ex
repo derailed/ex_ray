@@ -7,9 +7,7 @@ defmodule ExRay.Store do
   """
 
   @table_name :ex_ray_tracers_table
-  @request_id_to_pids_table_name :ex_ray_request_id_to_pids_table
-  @pid_to_request_id_table_name :ex_ray_pid_to_request_id_table
-  @ex_ray_ets_tables_list [@table_name, @request_id_to_pids_table_name, @pid_to_request_id_table_name]
+  @ex_ray_ets_tables_list [@table_name]
 
   require Logger
 
@@ -75,89 +73,4 @@ defmodule ExRay.Store do
     end
   end
 
-
-  @doc """
-  Links a request_id to corresponding PID, and otherwise. The key must be unique.
-  """
-  @spec link_request_id_and_pid(String.t, pid()) :: :ok
-  def link_request_id_and_pid(request_id, pid) when is_binary(request_id) and is_pid(pid) do
-    pids =
-      case :ets.lookup(@request_id_to_pids_table_name, request_id) do
-        [] -> []
-        [{_request_id, pids}] -> [pid | pids] |> Enum.dedup
-      end
-    :ets.insert(@request_id_to_pids_table_name, {request_id, pids})
-    :ets.insert(@pid_to_request_id_table_name, {pid, request_id})
-    :ok
-  end
-
-  @doc """
-  Returns a pid by linked request id.
-  """
-  @spec get_pids(String.t) :: {:ok, list(pid())} | {:error, :not_found}
-  def get_pids(request_id) when is_binary(request_id) do
-    case :ets.lookup(@request_id_to_pids_table_name, request_id) do
-      [] -> {:error, :not_found}
-      [{_request_id, pids}] -> {:ok, pids}
-    end
-  end
-
-  @doc """
-  Returns a request id by linked pid.
-  """
-  @spec get_request_id(pid()) :: {:ok, String.t} | {:error, :not_found}
-  def get_request_id(pid) when is_pid(pid) do
-    case :ets.lookup(@pid_to_request_id_table_name, pid) do
-      [] -> {:error, :not_found}
-      [{_pid, request_id}] -> {:ok, request_id}
-    end
-  end
-
-  @doc """
-  Remove all records where the request id is a key
-  """
-  @spec remove_request_id(String.t) :: :ok
-  def remove_request_id(request_id) when is_binary(request_id) do
-    case :ets.lookup(@request_id_to_pids_table_name, request_id) do
-      [] -> :ok
-      [{request_id, pids}] ->
-        :ets.delete(@request_id_to_pids_table_name, request_id)
-        Enum.each(pids, &(:ets.delete(@pid_to_request_id_table_name, &1)))
-    end
-  end
-
-  @doc """
-  Remove all records where the pid is a key
-  """
-  @spec remove_pid(pid()) :: :ok
-  def remove_pid(pid) when is_pid(pid) do
-    case :ets.lookup(@pid_to_request_id_table_name, pid) do
-      [] -> :ok
-      [{pid, request_id}] ->
-        remove_pid_util(pid, request_id)
-    end
-  end
-
-  defp remove_pid_util(pid, request_id) do
-    :ets.delete(@pid_to_request_id_table_name, pid)
-    case :ets.lookup(@request_id_to_pids_table_name, request_id) do
-      [] -> :ok
-      [{request_id, pids}] ->
-        new_pids = Enum.filter(pids, &(&1 != pid))
-        :ets.insert(@request_id_to_pids_table_name, {request_id, new_pids})
-    end
-  end
-
-  @doc """
-  Function-wrapper to link-unlink request_id and corresponding pid
-  """
-  def link_unlink_fn(fun) when is_function(fun) do
-    request_id = get_request_id(self()) # self() of the process who initiates creation of a new process
-    fn ->
-      pid = self() # self() of the process which will be created
-      link_request_id_and_pid(request_id, pid)
-      fun.()
-      remove_pid(pid)
-    end
-  end
 end

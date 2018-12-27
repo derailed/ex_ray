@@ -35,16 +35,16 @@ defmodule ExRay.Trace do
       end
 
       defp before_fun_body(ctx) do
-        trace_enabled? = Application.get_env(:opentracing, :enabled, false)
+        trace_enabled? = Application.get_env(:ex_ray, :enabled, false)
         if trace_enabled? do
-          predefined_tags = Application.get_env(:opentracing, :predefined_tags, [])
+          predefined_tags = Application.get_env(:ex_ray, :predefined_tags, [])
           # list of available tags
           tags = get_opentracing_tags(ctx, predefined_tags)
           Logger.debug(fn -> ">>> Starting span for `#{inspect ctx.target}" end)
           request_id = get_request_id(ctx)
           span = Span.open(ctx.target, request_id)
           span = Enum.reduce(tags, span, fn({tag, val}, acc) -> :otter.tag(acc, tag, val) end)
-          if Application.get_env(:opentracing, :logs_enabled, false) do
+          if Application.get_env(:ex_ray, :logs_enabled, false) do
             :otter.log(span, ">>> #{inspect ctx.target} with args: #{inspect ctx.args}")
           else
             span
@@ -60,11 +60,11 @@ defmodule ExRay.Trace do
       end
 
       defp after_fun_body(ctx, span, res) do
-        trace_enabled? = Application.get_env(:opentracing, :enabled, false)
+        trace_enabled? = Application.get_env(:ex_ray, :enabled, false)
         if trace_enabled? do
           Logger.debug(fn -> "<<< Closing span for `#{inspect ctx.target}" end)
           res =
-            if Application.get_env(:opentracing, :logs_enabled, false) do
+            if Application.get_env(:ex_ray, :logs_enabled, false) do
               :otter.log(span, "<<< #{inspect ctx.target} returned #{inspect res}")
             else
               span
@@ -74,62 +74,74 @@ defmodule ExRay.Trace do
         end
       end
 
+      @doc """
+      Trying to determine request id from context (`ctx` param variable)
+      """
       @spec get_request_id(map()) :: String.t
       def get_request_id(ctx) do
-        {:ok, request_id} = ctx.args
+        {:ok, request_id} = ctx
+          |> get_request_id_from_args()
           |> get_request_id_from_conn()
-          |> get_request_id_by_pid()
-          |> get_random_request_id()
+          |> throw_arg_err()
         request_id
       end
 
-      defp get_request_id_from_conn(args) when is_list(args) and length(args) > 0 do
-        first_arg = hd(args)
-        get_request_id_from_conn(first_arg, args)
+      defp find_request_id_in_arg({:request_id, request_id, _val}), do: request_id
+      defp find_request_id_in_arg(arg) when is_map(arg) do
+        cond do
+          Map.has_key?(arg, :request_id) ->
+            Map.get(arg, :request_id)
+          Map.has_key?(arg, "request_id") ->
+            Map.get(arg, "request_id")
+          Map.has_key?(arg, :payload) ->
+            Map.get(arg.payload, :request_id) || Map.get(arg.payload, "request_id")
+          Map.has_key?(arg, :term) ->
+            Map.get(arg.term, "request_id")
+          true ->
+            nil
+        end
       end
-      defp get_request_id_from_conn(%{req_headers: req_headers, resp_headers: resp_headers, __struct__: :"Plug.Conn"} = conn, args) do
-        get_conn_request_id_header(req_headers, resp_headers, args)
-      end
-      defp get_request_id_from_conn(_, args), do: {:error, args}
+      defp find_request_id_in_arg(_), do: nil
 
-      @doc """
-      Trying to determine header contains request_id in Plug.Conn
-      """
-      @spec get_conn_request_id_header(list(), list(), list()) :: {:ok, String.t} | {:error, list()}
-      defp get_conn_request_id_header(req_headers, resp_headers, args) do
-        key = "x-request-id"
-        {^key, req_id} =
-          [req_headers, resp_headers, [{key, :request_id_not_found}]]
-            |> Enum.map(&List.keyfind(&1, key, 0))
-            |> Enum.filter(&(not is_nil(&1)))
-            |> hd()
-        if req_id == :request_id_not_found do
-          {:error, args}
+      defp get_request_id_from_args(ctx) do
+        case Enum.find_value(ctx.args, &find_request_id_in_arg/1) do
+          nil ->
+            {:error, ctx}
+          request_id ->
+            {:ok, request_id}
+        end
+      end
+
+      defp get_request_id_from_conn({:ok, _} = res), do: res
+      defp get_request_id_from_conn({:error, ctx}) do
+        if is_list(ctx.args) and length(ctx.args) > 0 do
+          first_arg = hd(ctx.args)
+          get_request_id_from_conn(first_arg, ctx)
         else
-          Store.link_request_id_and_pid(req_id, self())
-          {:ok, req_id}
+          {:error, ctx}
         end
       end
 
-      @doc """
-      Trying to determine request_id by current pid
-      """
-      defp get_request_id_by_pid({:ok, request_id} = res), do: res
-      defp get_request_id_by_pid({:error, args}) do
-        case Store.get_request_id(self()) do
-          {:ok, request_id} -> {:ok, request_id}
-          {:error, :not_found} -> {:error, args}
+      defp get_request_id_from_conn(%Plug.Conn{} = conn, ctx) do
+        h = Plug.Conn.get_req_header(conn, "x-request-id")
+        case h do
+          [] -> {:error, ctx}
+          [request_id] -> {:ok, request_id}
         end
       end
+      defp get_request_id_from_conn(_, ctx), do: {:error, ctx}
 
       @doc """
       Generate random request_id and link it to the current pid
       """
-      defp get_random_request_id({:ok, request_id} = res), do: res
-      defp get_random_request_id(_) do
-        request_id = UUID5.generate
-        Store.link_request_id_and_pid(request_id, self())
-        {:ok, request_id}
+      defp throw_arg_err({:ok, request_id} = res), do: res
+      defp throw_arg_err({:error, ctx}) do
+        if Application.get_env(:ex_ray, :debug, false) do
+          st = Process.info(self(), :current_stacktrace)
+          IO.inspect("The request_id value is not found in the next args: #{inspect(ctx.args)}")
+          IO.inspect("Stacktrace: #{inspect(st)}")
+        end
+        raise ArgumentError, "The `request_id` value is missing in a request params"
       end
     end
   end
